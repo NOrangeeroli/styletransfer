@@ -1,24 +1,30 @@
+# coding=gbk
 import json,glob
+import pinyin
 from tools import start_debugger_on_exception
+from nltk.translate import bleu_score as bleu
 start_debugger_on_exception()
-author_list = ['é²è¿…','æœ±è‡ªæ¸…','è€èˆ','å¾å¿—æ‘©','è§çº¢','å¼ æ¨æ°´']#'èƒ¡é€‚','ç¿ç§‹ç™½'
-luxun_zawen= ['èŠ±è¾¹æ–‡å­¦','åç›–é›†','æœèŠ±å¤•æ‹¾','ä¸”ä»‹äº­æ‚æ–‡','å—è…”åŒ—è°ƒé›†','åŸ','ä¸‰é—²é›†','ä¼ªè‡ªç”±ä¹¦','çƒ­é£','è€Œå·²é›†','å‡†é£æœˆè°ˆ','äºŒå¿ƒé›†']
-luxun_novel = ['å‘å–Š','ç‹‚äººæ—¥è®°','æ•…äº‹æ–°ç¼–','å½·å¾¨']
-xiaohong_novel = ['ç”Ÿæ­»åœº','ç‰›è½¦ä¸Š','å®¶æ—ä»¥å¤–çš„äºº','åŒ—ä¸­å›½','å¼ƒå„¿','ç‹é˜¿å«‚çš„æ­»','æ—·é‡çš„å‘¼å–Š','å°åŸä¸‰æœˆ','å‘¼å…°æ²³ä¼ ','å•†å¸‚è¡—','è§çº¢çŸ­ç¯‡å°è¯´é›†','é©¬ä¼¯ä¹']
-xiaohong_zawen = ['è§çº¢æ•£æ–‡']
-zhuziqing_zawen = ['æ˜¥','ä½ æˆ‘','æ¬§æ¸¸æ‚è®°','è¸ªè¿¹','èƒŒå½±','ä¼¦æ•¦æ‚è®°']
-laoshe_novel = ['çŒ«åŸè®°','è´«è¡€é›†','æ–‡åšå£«','é›†å¤–','éª†é©¼ç¥¥å­',\
-    'å°å¡çš„ç”Ÿæ—¥','å¥³åº—å‘˜','èœ•','ç«è‘¬','å››ä¸–åŒå ‚','èµµå­æ›°',\
-    'è€å¼ çš„å“²å­¦','è›¤è—»é›†','ç§¦æ°ä¸‰å…„å¼Ÿ','ç¦»å©š','äºŒé©¬','æ— åé«˜åœ°æœ‰äº†å',\
-        'æ­£çº¢æ——ä¸‹','å°æœ¨å¤´äººå„¿','ç‰›å¤©èµä¼ ','æˆ‘è¿™ä¸€è¾ˆå­','æ¨±æµ·é›†','å¾®ç¥é›†',\
-            'æœˆç‰™é›†','èµ¶é›†']
-laoshe_zawen=['åŒ—äº¬çš„æ˜¥èŠ‚','å‡ºå£æˆç« ']
-xuzhimo_novel=['è½®ç›˜å°è¯´é›†']
-xuzhimo_zawen=['å·´é»çš„é³çˆª','è‡ªå‰–æ–‡é›†','çˆ±çœ‰å°æœ­','è½å¶']
-zhanghenshui_novel = ['é­é­‰ä¸–ç•Œ','ç¾äººæ©','å…«åä¸€æ¢¦','æ¢å±±ä¼¯ä¸ç¥è‹±å°','å‚²éœœèŠ±','æ°´æµ’æ–°ä¼ ',\
-    'äº”å­ç™»ç§‘','èœ€é“éš¾','å¤§æ±Ÿä¸œå»','ç§¦æ·®ä¸–å®¶','æ˜¥æ˜å¤–å²','è½éœå­¤é¹œ','å·´å±±å¤œé›¨','é‡‘ç²‰ä¸–å®¶',\
-        'çº¸é†‰é‡‘è¿·','çƒ­è¡€ä¹‹èŠ±','è™è´²ä¸‡å²','æ»¡æ±Ÿçº¢','åŒ—é›å—é£']
-zhanghenshui_zawen = ['å±±çª—å°å“']
+author_list = ['Â³Ñ¸','Öì×ÔÇå','ÀÏÉá','ĞìÖ¾Ä¦','Ïôºì','ÕÅºŞË®',\
+'ÕÅ°®Áá','ÈıÃ«','±ùĞÄ','°Í½ğ','¹ù¾´Ã÷','º«º®','°²Äİ±¦±´','ÑÏ¸èÜß','Íõ°²Òä','ÒàÊæ','·ëæ÷²Å','ÇíÑş','Ï¯Ä½Èİ','±ÏÊçÃô','ÕÅĞ¡æµ','Ç®ÖÓÊé','ÄªÑÔ']#'ºúÊÊ','öÄÇï°×'
+author_male = ['Â³Ñ¸','Öì×ÔÇå','ÀÏÉá','ĞìÖ¾Ä¦','ÕÅºŞË®','°Í½ğ','¹ù¾´Ã÷','º«º®','·ëæ÷²Å','Ç®ÖÓÊé','ÄªÑÔ','Óà»ª']
+author_female = ['Ïôºì','ÕÅ°®Áá','ÈıÃ«','±ùĞÄ','°²Äİ±¦±´','ÑÏ¸èÜß','Íõ°²Òä','ÒàÊæ','ÇíÑş','Ï¯Ä½Èİ','±ÏÊçÃô','ÕÅĞ¡æµ']
+luxun_zawen= ['»¨±ßÎÄÑ§','»ª¸Ç¼¯','³¯»¨Ï¦Ê°','ÇÒ½éÍ¤ÔÓÎÄ','ÄÏÇ»±±µ÷¼¯','·Ø','ÈıÏĞ¼¯','Î±×ÔÓÉÊé','ÈÈ·ç','¶øÒÑ¼¯','×¼·çÔÂÌ¸','¶şĞÄ¼¯']
+luxun_novel = ['ÄÅº°','¿ñÈËÈÕ¼Ç','¹ÊÊÂĞÂ±à','áİáå']
+xiaohong_novel = ['ÉúËÀ³¡','Å£³µÉÏ','¼Ò×åÒÔÍâµÄÈË','±±ÖĞ¹ú','Æú¶ù','Íõ°¢É©µÄËÀ','¿õÒ°µÄºôº°','Ğ¡³ÇÈıÔÂ','ºôÀ¼ºÓ´«','ÉÌÊĞ½Ö','Ïôºì¶ÌÆªĞ¡Ëµ¼¯','Âí²®ÀÖ']
+xiaohong_zawen = ['ÏôºìÉ¢ÎÄ']
+zhuziqing_zawen = ['´º','ÄãÎÒ','Å·ÓÎÔÓ¼Ç','×Ù¼£','±³Ó°','Â×¶ØÔÓ¼Ç']
+laoshe_novel = ['Ã¨³Ç¼Ç','Æ¶Ñª¼¯','ÎÄ²©Ê¿','¼¯Íâ','ÂæÍÕÏé×Ó',\
+    'Ğ¡ÆÂµÄÉúÈÕ','Å®µêÔ±','ÍÉ','»ğÔá','ËÄÊÀÍ¬ÌÃ','ÕÔ×ÓÔ»',\
+    'ÀÏÕÅµÄÕÜÑ§','¸òÔå¼¯','ÇØÊÏÈıĞÖµÜ','Àë»é','¶şÂí','ÎŞÃû¸ßµØÓĞÁËÃû',\
+        'ÕıºìÆìÏÂ','Ğ¡Ä¾Í·ÈË¶ù','Å£Ìì´Í´«','ÎÒÕâÒ»±²×Ó','Ó£º£¼¯','Î¢Éñ¼¯',\
+            'ÔÂÑÀ¼¯','¸Ï¼¯']
+laoshe_zawen=['±±¾©µÄ´º½Ú','³ö¿Ú³ÉÕÂ']
+xuzhimo_novel=['ÂÖÅÌĞ¡Ëµ¼¯']
+xuzhimo_zawen=['°ÍÀèµÄÁÛ×¦','×ÔÆÊÎÄ¼¯','°®Ã¼Ğ¡Ôı','ÂäÒ¶']
+zhanghenshui_novel = ['÷Í÷ËÊÀ½ç','ÃÀÈË¶÷','°ËÊ®Ò»ÃÎ','ÁºÉ½²®Óë×£Ó¢Ì¨','°ÁËª»¨','Ë®ä°ĞÂ´«',\
+    'Îå×ÓµÇ¿Æ','ÊñµÀÄÑ','´ó½­¶«È¥','ÇØ»´ÊÀ¼Ò','´ºÃ÷ÍâÊ·','ÂäÏ¼¹ÂğÍ','°ÍÉ½Ò¹Óê','½ğ·ÛÊÀ¼Ò',\
+        'Ö½×í½ğÃÔ','ÈÈÑªÖ®»¨','»¢êÚÍòËê','Âú½­ºì','±±ÑãÄÏ·É']
+zhanghenshui_zawen = ['É½´°Ğ¡Æ·']
 def get_json_dejian_minzuo(author):
     files = glob.glob('/home/liuziqi/chinesestory/dejian_minzuo/book/*.json')
     luxun = {}
@@ -28,17 +34,17 @@ def get_json_dejian_minzuo(author):
         if data['author'] == author:
             print(data['title'])
             
-            if author == 'é²è¿…':
+            if author == 'Â³Ñ¸':
                 filter = luxun_zawen+luxun_novel
-            elif author == 'è§çº¢':
+            elif author == 'Ïôºì':
                 filter = xiaohong_zawen+xiaohong_novel
-            elif author == 'æœ±è‡ªæ¸…':
+            elif author == 'Öì×ÔÇå':
                 filter = zhuziqing_zawen
-            elif author == 'è€èˆ':
+            elif author == 'ÀÏÉá':
                 filter = laoshe_novel+laoshe_zawen
-            elif author == 'å¾å¿—æ‘©':
+            elif author == 'ĞìÖ¾Ä¦':
                 filter = xuzhimo_novel+xuzhimo_zawen
-            elif author == 'å¼ æ¨æ°´':
+            elif author == 'ÕÅºŞË®':
                 filter = zhanghenshui_zawen+zhanghenshui_novel
             else :
                 filter = []
@@ -64,42 +70,103 @@ def get_json_dejian_minzuo(author):
                 for c in data['chapter']:
                     luxun[data['title']].append(c)
 
-    if author == 'é²è¿…':
-        name = 'luxun'  
-    elif author == 'è§çº¢':
-        name = 'xiaohong'
-    elif author == 'æœ±è‡ªæ¸…':
-        name = 'zhuziqing'
-    elif author == 'è€èˆ':
-        name = 'laoshe'
-    elif author == 'å¾å¿—æ‘©':
-        name = 'xuzhimo'
-    elif author =='å¼ æ¨æ°´':
-        name = 'zhanghenshui'
-    else:
-        name = 'temp'
+    name = pinyin.get(author, format="strip", delimiter="")
     with open('00-grabdata/'+name+'.json','w') as f:
         json.dump(luxun,f,ensure_ascii=False,indent=4)
+
+
+
+
+def get_json_auto(author):
+    dic = json.load(open('00-author-files.json','r'))
+    files = list(set(dic[author]))
+    # files = glob.glob('/home/liuziqi/chinesestory/dejian_minzuo/book/*.json')
+    luxun = {}
+    text_temp = []
+    for f in files:
+        print(f)
+        data = json.load(open(f,'r'))
+        if 'books' in data.keys():
+            datas = data['books']
+            
+        else:
+            datas = [data]
+        for data in datas:
+            if 'chapter' in data.keys():
+                str_chapter = 'chapter'
+            elif 'chpater' in data.keys():
+                str_chapter = 'chpater'
+            else:
+                assert False
+                
+            text = ''.join([x['text'] for x in data[str_chapter]])
+            skip = False
+            for t in text_temp:
+                if bleu.sentence_bleu([list(t)],list(text))>0.8:
+                    # print(f)
+                    # assert False
+                    skip = True
+
+            if skip:
+                continue
+            text_temp.append(text)
+            if data['title'] in luxun.keys():
+
+                for c in data[str_chapter]:
+                    if c['title']  in [x['title'] for x in luxun[data['title']]]:
+                        # assert False
+                        continue
+                    else:
+                        luxun[data['title']].append(c)
+                    print('    ',c['title'])
+            else:
+                print(data['title'])
+                luxun[data['title']] = []
+                for c in data[str_chapter]:
+                    print('    ',c['title'])
+                    luxun[data['title']].append(c)
+
+    name = pinyin.get(author, format="strip", delimiter="")
     
+    with open('00-grabdata/'+name+'.json','w') as f:
+        json.dump(luxun,f,ensure_ascii=False,indent=4)
 
+'''
 files = glob.glob('/home/liuziqi/chinesestory/**/*.json',recursive=True)
-
+author_files = {}
 author = []
 for f in files:
-    data = json.load(open(f,'r'))
     try:
-        if data['author'] in ['é‡‘åº¸','jinyong','JINYONG','Jinyong',\
-            'å¤é¾™','gulong','GULONG','Gulong',\
-                'å†°å¿ƒ','bingxin','BINGXIN','Bingxin',\
-                    'ä¸‰æ¯›','sanmao','SANMAO','Sanmao',\
-                        'éƒ­æ•¬æ˜','guojingming','GUOJINGMING','Guojingming',\
-                            'éŸ©å¯’','hanhan','Hanhan','HANHAN',\
-                                'å®‰å¦®å®è´','annibaobei','ANNIBAOBEI','Annibaobei']:
+        data = json.load(open(f,'r'))
+    except:
+        continue
+    try:
+        if True:
+            try:
+                author_files[data['author']].append(f)
+            except:
+                author_files[data['author']] = []
+                author_files[data['author']].append(f)
+            
             print(f)
         # print(data['author'])
         if data['author'] not in author:
             author.append(data['author'])
     except:
         continue
+with open('00-author-files.json','w') as at:
+    json.dump(author_files,at, ensure_ascii=False,indent=4)
+'''
+# dic_new = {}
+for author in ['Â³Ñ¸','Öì×ÔÇå','ÀÏÉá','ĞìÖ¾Ä¦','Ïôºì','ÕÅºŞË®']:
+    get_json_dejian_minzuo(author)
+for author in ['ÕÅ°®Áá','ÈıÃ«','±ùĞÄ','°Í½ğ','¹ù¾´Ã÷','º«º®','°²Äİ±¦±´','ÑÏ¸èÜß','Íõ°²Òä','ÒàÊæ','·ëæ÷²Å','ÇíÑş','Ï¯Ä½Èİ','±ÏÊçÃô','ÕÅĞ¡æµ','Ç®ÖÓÊé','ÄªÑÔ']:
+    print(author)
+    dic = json.load(open('00-author-files.json','r'))
+    
+    # dic_new[author] = sorted(dic[author])
+    get_json_auto(author)
+# json.dump(dic_new,open('temp.json','w'), ensure_ascii=False,indent=4)
 import pdb;pdb.set_trace()
+
 
