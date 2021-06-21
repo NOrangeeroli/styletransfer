@@ -1,5 +1,5 @@
 import json,glob
-
+from pathlib import Path
 authors = ['laoshe','luxun','xiaohong','zhanghenshui','xuzhimo','zhuziqing']
 def write_data_title_paragraph(author):
     f = '00-grabdata/'+author+'.json'
@@ -22,7 +22,9 @@ def write_data_title_paragraph(author):
     print('    ','docs:',docs)
     print('    ','chaps:',chaps)
     print('    ','length:',leng)
-    with open('00-grabdata/'+author+'/data.json','w') as f:
+    path = '00-grabdata/'+author
+    Path(path).mkdir(parents=True, exist_ok=True)
+    with open(path+'/data.json','w') as f:
         json.dump(output,f,ensure_ascii=False,indent=4)
 for author in authors:    
     write_data_title_paragraph(author=author)
