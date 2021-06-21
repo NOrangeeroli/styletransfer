@@ -3,11 +3,13 @@ import pandas as pd
 
 
 
-def gen_dataset():
+def gen_dataset(authors = []):
     files= glob.glob('00-grabdata/*/data.json')
     output = pd.DataFrame()
     for f in files:
         author = f.split('/')[-2]
+        if not author in authors:
+            continue
         with open(f,'r') as fi:
             data=json.load(fi)
             for title in data.keys():
@@ -21,4 +23,4 @@ def gen_dataset():
     output.to_csv('10-construct-dataset.csv')
     import pdb;pdb.set_trace()
 
-gen_dataset()
+gen_dataset(['luxun','sanmao'])
