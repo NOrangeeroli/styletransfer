@@ -3,11 +3,13 @@ from tools import start_debugger_on_exception
 from pathlib import Path
 import re
 from text_utils import chinese_ratio
+
 start_debugger_on_exception()
 def split_para(x):
     if '|' in x:
         return x.split('|')
     elif '\n' in x:
+        import pdb;pdb.set_trace()
         return x.split('\n')
     #elif '    ' in x:
     #    return x.split('    ')
@@ -25,6 +27,7 @@ def len_ch_check(x):
 def clean_data(x):
     head_no = u'?？。，,”")）》'
     tail_no = u'"“《（('
+    ilegal_char = u'[^\u4E00-\u9FA5?？!.！、\;；<>\[\]【】\{\}!@#$%^&*()！@#¥%&（）～·`~、\-_——\-+=:：……0-9a-zA-Z。，,”")）》"“《（(|\/「」\'’‘．\n]'
     r_second_modify = re.compile(u'[^'+head_no+u'].*[^'+tail_no+u']',re.UNICODE)
     start = u'[^\u4E00-\u9FA5]{,30}'
     end = u'[^\u4E00-\u9FA5]{,30}'
@@ -45,6 +48,9 @@ def clean_data(x):
     for rs in list_del:
         if re.search(rs,x) is not None:
             x = ''
+    wrong_delimit = re.findall(re.compile(u'[^?!.？。！……"”\.\!\?]\|',re.UNICODE),x)
+    for m in wrong_delimit:
+        x = x.replace(m,m[:-1])
     if x != '':
         if  len(x)<=10:
             x = ''
@@ -53,11 +59,19 @@ def clean_data(x):
     if "\\" in x and '"' not in x and '“' not in x and '”' not in x:
         #import pdb;pdb.set_trace()
         x= x.replace('\\','"')
-    x = x.replace('“','"').replace('”','"')
-    x = x.replace('    ','')
+    x = x.replace('「','“')
+    x= x.replace('」','”')
+    #x = x.replace('“','"').replace('”','"')
+    x = x.replace(' ','')
+    # x = x.replace('\t','')
+    # if len(re.findall(ilegal_char,x))>0:
+
+    #     import pdb;pdb.set_trace()
+    x = re.sub(ilegal_char,'',x,flags=re.U)
     return x
 authors = [f.split('/')[-1].split('.')[0] for f in glob.glob('00-grabdata/*.json')]
 def write_data_title_paragraph(author):
+    book_per_author = json.load(open('01-name-the-books-per-author.json','r'))
     f = '00-grabdata/'+author+'.json'
     data = json.load(open(f,'r'))
     output = {}
@@ -66,6 +80,8 @@ def write_data_title_paragraph(author):
     docs = 0
     chaps = 0
     for title in data.keys():
+        if title+'DEL' in book_per_author[author]:
+            continue
         docs += 1
         output[title] = []
         chapter = data[title]
@@ -84,7 +100,10 @@ def write_data_title_paragraph(author):
             chaps +=1
             paras += len(c['content'])
             leng += sum([len(x) for x in c['content']])
-            output[title]+=[x.strip() for x in c['content'] if len(x.strip())>1  and len_ch_check(x.strip()) != '']
+            temp = [x.strip() for x in c['content'] if len(x.strip())>1  and len_ch_check(x.strip()) != '']
+            #temp = sum([cut_string_zh(x,300) for x in temp],[])
+
+            output[title]+=temp
     print('author:',author)
     print('    ','docs:',docs)
     print('    ','chaps:',chaps)

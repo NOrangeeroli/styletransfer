@@ -87,11 +87,13 @@ def get_json_auto(author):
         print(f)
         data = json.load(open(f,'r'))
         if 'books' in data.keys():
-            datas = data['books']
+            continue
             
-        else:
-            datas = [data]
-        for data in datas:
+        if True:
+            if '小说集' in data['title']:
+                continue
+            if ('文集' in data['title'] or '全集' in data['title'] or '作品集' in data['title'] or '诗歌集' in data['title']) and not (':' in data['title']  or '：' in data['title']):
+                continue
             if 'chapter' in data.keys():
                 str_chapter = 'chapter'
             elif 'chpater' in data.keys():
@@ -158,6 +160,7 @@ with open('00-author-files.json','w') as at:
     json.dump(author_files,at, ensure_ascii=False,indent=4)
 '''
 # dic_new = {}
+'''
 for author in ['鲁迅','朱自清','老舍','徐志摩','萧红','张恨水']:
     get_json_dejian_minzuo(author)
 for author in ['张爱玲','三毛','冰心','巴金','郭敬明','韩寒','安妮宝贝','严歌苓','王安忆','亦舒','冯骥才','琼瑶','席慕容','毕淑敏','张小娴','钱钟书','莫言']:
@@ -166,6 +169,13 @@ for author in ['张爱玲','三毛','冰心','巴金','郭敬明','韩寒','安妮宝贝','严歌苓'
     
     # dic_new[author] = sorted(dic[author])
     get_json_auto(author)
+'''
+for author in ['古龙','金庸','安妮宝贝']:
+    print(author)
+    dic = json.load(open('00-author-files.json','r'))
+    
+    # dic_new[author] = sorted(dic[author])
+    get_json_auto(author)    
 # json.dump(dic_new,open('temp.json','w'), ensure_ascii=False,indent=4)
 import pdb;pdb.set_trace()
 
